@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
 import { supabase } from '@/lib/supabaseClient';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 
 /**
  * 특정 API 키 조회 (GET)
@@ -16,34 +18,57 @@ export async function GET(
   try {
     const id = params.id;
 
-    // 세션 확인하여 사용자 ID 가져오기
-    const user = await getSessionUser();
-    if (!user) {
+    // Supabase 클라이언트 생성 (서버 라우트 핸들러용)
+    const supabaseServer = createRouteHandlerClient({ cookies });
+    
+    // 현재 세션 확인
+    const { data: { session }, error: sessionError } = await supabaseServer.auth.getSession();
+    
+    let userId = null;
+    
+    // Supabase 세션이 있으면 사용
+    if (session?.user?.id) {
+      userId = session.user.id;
+      console.log('Supabase 세션에서 사용자 ID 확인:', userId);
+    } else {
+      // NextAuth 세션 확인 시도
+      const user = await getSessionUser();
+      if (user?.id) {
+        userId = user.id;
+        console.log('NextAuth 세션에서 사용자 ID 확인:', userId);
+      }
+    }
+    
+    if (!userId) {
       return NextResponse.json(
         { error: '인증이 필요합니다.' },
         { status: 401 }
       );
     }
 
-    // API 키 상세 정보 조회 (소유자 확인 포함)
-    const { data: apiKey, error } = await supabase
+    // 특정 API 키 조회 - RLS가 적용된 쿼리 (서비스 롤 사용)
+    const { data: apiKey, error } = await supabaseServer
       .from('api_keys')
       .select('*')
       .eq('id', id)
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .single();
 
     if (error) {
-      if (error.code === 'PGRST116') {
-        return NextResponse.json(
-          { error: 'API 키를 찾을 수 없습니다.' },
-          { status: 404 }
-        );
-      }
-      throw error;
+      console.error('API 키 조회 중 오류:', error);
+      return NextResponse.json(
+        { error: 'API 키를 찾을 수 없습니다.' },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json(apiKey);
+    // used 필드를 usage로 변환하여 클라이언트 호환성 유지
+    const formattedKey = {
+      ...apiKey,
+      usage: apiKey.used,
+    };
+
+    return NextResponse.json(formattedKey);
   } catch (error) {
     console.error('API 키 조회 오류:', error);
     return NextResponse.json(
@@ -68,9 +93,26 @@ export async function PUT(
     const id = params.id;
     const { name, limit } = await request.json();
 
-    // 세션 확인하여 사용자 ID 가져오기
-    const user = await getSessionUser();
-    if (!user) {
+    // Supabase 클라이언트 생성 (서버 라우트 핸들러용)
+    const supabaseServer = createRouteHandlerClient({ cookies });
+    
+    // 현재 세션 확인
+    const { data: { session }, error: sessionError } = await supabaseServer.auth.getSession();
+    
+    let userId = null;
+    
+    // Supabase 세션이 있으면 사용
+    if (session?.user?.id) {
+      userId = session.user.id;
+    } else {
+      // NextAuth 세션 확인 시도
+      const user = await getSessionUser();
+      if (user?.id) {
+        userId = user.id;
+      }
+    }
+    
+    if (!userId) {
       return NextResponse.json(
         { error: '인증이 필요합니다.' },
         { status: 401 }
@@ -90,26 +132,30 @@ export async function PUT(
       );
     }
 
-    // API 키 소유권 확인 및 데이터 수정
-    const { data: apiKey, error } = await supabase
+    // API 키 소유권 확인 및 데이터 수정 - RLS가 적용된 쿼리 (서비스 롤 사용)
+    const { data: apiKey, error } = await supabaseServer
       .from('api_keys')
       .update(updateData)
       .eq('id', id)
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .select()
       .single();
 
     if (error) {
-      if (error.code === 'PGRST116') {
-        return NextResponse.json(
-          { error: 'API 키를 찾을 수 없거나 수정 권한이 없습니다.' },
-          { status: 404 }
-        );
-      }
-      throw error;
+      console.error('API 키 수정 중 오류:', error);
+      return NextResponse.json(
+        { error: 'API 키를 찾을 수 없거나 수정 권한이 없습니다.' },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json(apiKey);
+    // used를 usage로 변환하여 클라이언트 호환성 유지
+    const formattedKey = {
+      ...apiKey,
+      usage: apiKey.used,
+    };
+
+    return NextResponse.json(formattedKey);
   } catch (error) {
     console.error('API 키 수정 오류:', error);
     return NextResponse.json(
@@ -133,24 +179,45 @@ export async function DELETE(
   try {
     const id = params.id;
 
-    // 세션 확인하여 사용자 ID 가져오기
-    const user = await getSessionUser();
-    if (!user) {
+    // Supabase 클라이언트 생성 (서버 라우트 핸들러용)
+    const supabaseServer = createRouteHandlerClient({ cookies });
+    
+    // 현재 세션 확인
+    const { data: { session }, error: sessionError } = await supabaseServer.auth.getSession();
+    
+    let userId = null;
+    
+    // Supabase 세션이 있으면 사용
+    if (session?.user?.id) {
+      userId = session.user.id;
+    } else {
+      // NextAuth 세션 확인 시도
+      const user = await getSessionUser();
+      if (user?.id) {
+        userId = user.id;
+      }
+    }
+    
+    if (!userId) {
       return NextResponse.json(
         { error: '인증이 필요합니다.' },
         { status: 401 }
       );
     }
 
-    // API 키 소유권 확인 및 삭제
-    const { error } = await supabase
+    // API 키 소유권 확인 및 삭제 - RLS가 적용된 쿼리 (서비스 롤 사용)
+    const { error } = await supabaseServer
       .from('api_keys')
       .delete()
       .eq('id', id)
-      .eq('user_id', user.id);
+      .eq('user_id', userId);
 
     if (error) {
-      throw error;
+      console.error('API 키 삭제 중 오류:', error);
+      return NextResponse.json(
+        { error: 'API 키를 삭제하는 중 오류가 발생했습니다.' },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(
