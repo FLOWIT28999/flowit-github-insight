@@ -5,12 +5,13 @@ import LoginButton from './components/LoginButton';
 import Link from 'next/link';
 import Loading from './components/Loading';
 import Header from './components/Header';
-import { Github, Star, GitPullRequest, Code, ExternalLink, Check, ChevronRight, Zap, Database, Shield, TrendingUp, BarChart2, PlayCircle, Users, User } from 'lucide-react';
+import { Github, Star, GitPullRequest, Code, ExternalLink, Check, ChevronRight, Zap, Database, Shield, TrendingUp, BarChart2, PlayCircle, Users, User, LayoutDashboard, LogOut } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import RepositoryVisualizer from './components/RepositoryVisualizer';
 import AiChatBot from './components/AiChatBot';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, Badge, Button } from './components/Card';
+import { useRouter } from 'next/navigation';
 
 // 예시 저장소 분석 결과
 const demoAnalysisResult = {
@@ -19,10 +20,11 @@ const demoAnalysisResult = {
 };
 
 export default function Home() {
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const [repoUrl, setRepoUrl] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [activeFeature, setActiveFeature] = useState(0);
+  const router = useRouter();
 
   // 데모 분석 함수
   const handleDemoAnalyze = () => {
@@ -100,19 +102,35 @@ export default function Home() {
               {loading ? (
                 <div className="w-8 h-8 rounded-full bg-gray-700 animate-pulse"></div>
               ) : user ? (
-                <div className="flex items-center gap-2 bg-gray-900 bg-opacity-50 hover:bg-opacity-80 px-3 py-2 rounded-lg transition-all">
-                  {user.user_metadata?.avatar_url ? (
-                    <Image 
-                      src={user.user_metadata.avatar_url} 
-                      alt="Profile" 
-                      width={28} 
-                      height={28} 
-                      className="rounded-full"
-                    />
-                  ) : (
-                    <User className="w-5 h-5 text-gray-300" />
-                  )}
-                  <span className="text-gray-300 hidden md:inline">{user.user_metadata?.user_name || user.email}</span>
+                <div className="flex items-center gap-4">
+                  <Link 
+                    href="/dashboard"
+                    className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
+                  >
+                    <LayoutDashboard className="w-5 h-5" />
+                    <span className="hidden md:inline">대시보드</span>
+                  </Link>
+                  <div className="flex items-center gap-2 bg-gray-900 bg-opacity-50 hover:bg-opacity-80 px-3 py-2 rounded-lg transition-all">
+                    {user.user_metadata?.avatar_url ? (
+                      <Image 
+                        src={user.user_metadata.avatar_url} 
+                        alt="Profile" 
+                        width={28} 
+                        height={28} 
+                        className="rounded-full"
+                      />
+                    ) : (
+                      <User className="w-5 h-5 text-gray-300" />
+                    )}
+                    <span className="text-gray-300 hidden md:inline">{user.user_metadata?.user_name || user.email}</span>
+                  </div>
+                  <button
+                    onClick={signOut}
+                    className="p-2 rounded-full bg-gray-800/50 text-gray-300 hover:bg-red-900/30 hover:text-white transition-colors"
+                    title="로그아웃"
+                  >
+                    <LogOut className="w-5 h-5" />
+                  </button>
                 </div>
               ) : (
                 <LoginButton />
@@ -155,18 +173,18 @@ export default function Home() {
                 ) : user ? (
                   <>
                     <Link 
-                      href="/analyze"
+                      href="/dashboard"
                       className="inline-flex h-14 items-center justify-center rounded-full bg-red-600 px-8 text-base font-medium text-white shadow-lg shadow-red-500/25 transition-all hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                    >
+                      대시보드로 이동
+                      <ChevronRight className="ml-2 h-5 w-5" />
+                    </Link>
+                    <Link 
+                      href="/analyze"
+                      className="inline-flex h-14 items-center justify-center rounded-full border border-gray-700 bg-black/30 px-8 text-base font-medium text-white backdrop-blur-sm transition-colors hover:bg-black/50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                     >
                       저장소 분석하기
                       <ChevronRight className="ml-2 h-5 w-5" />
-                    </Link>
-                    <Link
-                      href="/api-keys"
-                      className="inline-flex h-14 items-center justify-center rounded-full border border-gray-700 bg-black/30 px-8 text-base font-medium text-white backdrop-blur-sm transition-colors hover:bg-black/50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-                    >
-                      API 키 관리
-                      <Database className="ml-2 h-5 w-5" />
                     </Link>
                   </>
                 ) : (
