@@ -12,6 +12,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  updateUserMetadata: (metadata: Record<string, any>) => Promise<void>;
 }
 
 /**
@@ -21,6 +22,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   signOut: async () => {},
+  updateUserMetadata: async () => {},
 });
 
 /**
@@ -118,8 +120,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  /**
+   * 사용자 메타데이터 업데이트 함수
+   * @param metadata 업데이트할 메타데이터 객체
+   */
+  const updateUserMetadata = async (metadata: Record<string, any>) => {
+    try {
+      // 현재 사용자가 Supabase 사용자인지 확인
+      if (user && user.id !== 'nextauth-user') {
+        const { data, error } = await supabase.auth.updateUser({
+          data: {
+            ...metadata
+          }
+        });
+        
+        if (error) {
+          throw error;
+        }
+        
+        if (data.user) {
+          setUser(data.user);
+        }
+      } else if (user && user.id === 'nextauth-user') {
+        // NextAuth 사용자인 경우 로컬 상태에만 반영
+        setUser({
+          ...user,
+          user_metadata: {
+            ...user.user_metadata,
+            ...metadata
+          }
+        });
+        
+        // 필요시 NextAuth 사용자 정보 업데이트를 위한 API 엔드포인트 호출 추가
+        console.log('NextAuth 사용자 메타데이터 업데이트:', metadata);
+      }
+    } catch (error) {
+      console.error('사용자 메타데이터 업데이트 중 에러:', error);
+      throw error;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signOut, updateUserMetadata }}>
       {children}
     </AuthContext.Provider>
   );
