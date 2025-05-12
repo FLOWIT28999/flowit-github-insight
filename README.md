@@ -4,7 +4,7 @@
 
 **GitHub 저장소 분석을 통해 유용한 인사이트를 제공하는 AI 기반 웹 애플리케이션**
 <p align="center">
-  <img src="ReadmeImg/flowitgithubinsightGIST.gif" alt="Flowit GitHub Insight GIST" width="100%" />
+  <img src="ReadmeImg/flowitgithubinsightGIST.gif" alt="Flowit GitHub Insight GIST" width="60%" />
 </p>
 
 
@@ -43,7 +43,7 @@
 ### 1. GitHub 저장소 분석
 
 
-<img src="ReadmeImg/analyze2.png" alt="저장소 분석 화면" width="100%"/>
+<img src="ReadmeImg/analyze2.png" alt="저장소 분석 화면" width="60%"/>
 
 - **AI 기반 코드 분석**: 저장소의 코드, README, 이슈, PR 등을 종합적으로 분석
 - **다각도 인사이트**: 프로젝트 목적, 구조, 기술 스택, 학습 난이도 등 다각도 평가
@@ -52,7 +52,7 @@
 
 ### 2. API 키 관리
 
-<img src="ReadmeImg/apikey2.png" alt="API 키 관리 화면" width="100%"/>
+<img src="ReadmeImg/apikey2.png" alt="API 키 관리 화면" width="60%"/>
 
 - **API 키 생성**: 외부 서비스 연동을 위한 고유 API 키 생성
 - **권한 관리**: 키별 사용 권한 및 제한 설정
@@ -61,7 +61,7 @@
 
 ### 3. 분석 이력 관리
 
-<img src="ReadmeImg/history2.png" alt="분석 이력 화면" width="100%"/>
+<img src="ReadmeImg/history2.png" alt="분석 이력 화면" width="60%"/>
 
 - **분석 결과 저장**: 모든 분석 결과를 사용자별로 저장 및 관리
 - **이력 조회**: 날짜, 저장소, 분석 유형 등으로 검색 및 필터링
@@ -70,7 +70,7 @@
 
 ### 4. 사용자 설정 관리
 
-<img src="ReadmeImg/setting.png" alt="사용자 설정 화면" width="100%"/>
+<img src="ReadmeImg/setting.png" alt="사용자 설정 화면" width="60%"/>
 
 - **계정 관리**: 사용자 프로필 및 계정 정보 관리
 - **알림 설정**: 이메일 알림 및 주간 리포트 설정
@@ -79,7 +79,7 @@
 
 ### 5. 사용자 인증
 
-<img src="ReadmeImg/auth.png" alt="사용자 인증 화면" width="100%"/>
+<img src="ReadmeImg/auth.png" alt="사용자 인증 화면" width="60%"/>
 
 - **소셜 로그인**: Google, GitHub 계정을 통한 간편 로그인
 - **보안 강화**: JWT 기반 안전한 인증 시스템
