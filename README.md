@@ -4,7 +4,7 @@
 
 **GitHub 저장소 분석을 통해 유용한 인사이트를 제공하는 AI 기반 웹 애플리케이션**
 <p align="center">
-  <img src="ReadmeImg/flowitgithubinsightGIST.gif" alt="Flowit GitHub Insight GIST" width="50%" />
+  <img src="ReadmeImg/flowitgithubinsight.mp4" alt="Flowit GitHub Insight GIST" width="70%" />
 </p>
 
 
